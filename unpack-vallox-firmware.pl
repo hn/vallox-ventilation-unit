@@ -42,6 +42,16 @@ sub runpack {
         my $payload;
         seek( IF, $off + $spos, 0 );
         read( IF, $header, 36 ) == 36 || die("Invalid input file - unable to read header");
+
+        # Unknown: 16 bytes with unknown meaning (0x00000000, len, len, len) - not CRC-checked
+        if (substr( $header, 0, 12) ne ( "\x00" x 12 ) ) {
+            printf( "%7X %*v2.2X\n", $off + $spos, " ", substr( $header, 0, 16) );
+            print "(" . $level . ")==== --Unknown-- ----Size--- ----Size--- ----Size---\n\n";
+
+            $spos += 16;
+            next;
+        }
+
         printf( "%7X %*v2.2X\n", $off + $spos, " ", $header );
         print "(" . $level . ")==== -------------Unknown/Reserved------------ -----Version----- ----Type--- ----Size--- -CRC- -DataStart- -hCRC\n";
 
@@ -65,13 +75,6 @@ sub runpack {
 
         $spos += 36;
 
-        # Unknown #1: Subtype 1 has 16 trailing bytes with unknown meaning (something, len, len) - not CRC-checked
-        if ( $subtype == 1 ) {
-            read( IF, my $buf, 16 ) == 16 || die("Invalid input file - unable to read");
-            printf( "Unknown trailing bytes: %*v2.2X\n", " ", $buf );
-
-            $spos += 16;
-        }
         print "\n";
 
         # Subtype 0 is a container-like section

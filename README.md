@@ -13,7 +13,7 @@ microprocessor (ARM Cortex M4F).
 
 ## Software
 
-The firmware of the device is available at the [Vallox Cloud Website](https://cloud.vallox.com/) as a
+The firmware of the device is available for download at the [Vallox Cloud Website](https://cloud.vallox.com/) as a
 single binary file [HSWUPD.BIN](http://firmware.vallox.com/HSWUPD.BIN). All
 changes are listed in the [changelog](http://cloud.vallox.com/changelog.txt).
 
@@ -40,7 +40,9 @@ Writing output file 'section-0-0000000-3490737.bin'
 (1)==== -------------Unknown/Reserved------------ -----Version----- ----Type--- ----Size--- -CRC- -DataStart- -hCRC
      36                                                                              166496 67 6C      166496 6E C6
 Writing output file 'section-1-0000036-0166496.bin'
-Unknown trailing bytes: 00 00 00 00 E2 C8 01 00 CE 0A 1C 00 CE 0A 1C 00
+
+  28AA8 00 00 00 00 E2 C8 01 00 CE 0A 1C 00 CE 0A 1C 00
+(1)==== --Unknown-- ----Size--- ----Size--- ----Size---
 
   28AB8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 02 00 01 00 03 BE C8 01 00 4E 1C BE C8 01 00 C2 1C
 (1)==== -------------Unknown/Reserved------------ -----Version----- ----Type--- ----Size--- -CRC- -DataStart- -hCRC
@@ -61,7 +63,9 @@ Writing output file 'section-1-2004358-1486379.bin'
 (2)==== -------------Unknown/Reserved------------ -----Version----- ----Type--- ----Size--- -CRC- -DataStart- -hCRC
 2004394                                                                              354616 3C 26      354616 97 A9
 Writing output file 'section-2-2004394-0354616.bin'
-Unknown trailing bytes: 00 00 00 00 00 00 00 00 BF 44 11 00 BF 44 11 00
+
+ 23FF06 00 00 00 00 00 00 00 00 BF 44 11 00 BF 44 11 00
+(2)==== --Unknown-- ----Size--- ----Size--- ----Size---
 
  23FF16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 02 00 02 00 02 9B 44 11 00 84 62 9B 44 11 00 CA C7
 (2)==== -------------Unknown/Reserved------------ -----Version----- ----Type--- ----Size--- -CRC- -DataStart- -hCRC
@@ -93,11 +97,15 @@ Further examination reveals the following file layout and content:
 yourself (width=50, height=2000, format=RGB32).
 
 `ISW` likely is the code/webserver for the web gui and cloud ('ISW' = 'internet software'?).
+Uses the [STM32F4xx peripherals library](https://www.st.com/content/st_com/en/products/embedded-software/mcu-mpu-embedded-software/stm32-embedded-software/stm32-standard-peripheral-libraries/stsw-stm32065.html)
+and the [lwIP Lightweight IP stack](https://www.nongnu.org/lwip/2_0_x/index.html).
 
-`TXT` contains a FAT file system with HTML/CSS/PNG web gui data.
+`TXT` contains a FAT file system with HTML/CSS/PNG web gui data (`/0/imgs/v_logo.png`, `/0/favicon.ico`,
+`/0/index.htm`, `/0/css/minimzd.css`, ...). Use `fatcat section-2-2359062-1131675.bin -x
+/path/to/output/dir` to extract. Alle HTML/CSS/JS files are gzipped.
 
 ### ToDo
 
-Sections with subtype `0001` contain 16 trailing bytes with unknown meaning (something,
-len, len). These bytes are not CRC-checked.
+Sections with subtype `0001` contain 16 trailing bytes with unknown meaning
+(0x00000000, slen1+36, slen2+36, slen2+36). These bytes are not CRC-checked.
 
