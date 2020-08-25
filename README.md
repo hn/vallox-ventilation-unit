@@ -89,23 +89,33 @@ Further examination reveals the following file layout and content:
 | | ----- section-2-2359062-1131675.bin  0002-0002     TXT
 ```
 
-`PKG` likely is the software updater for the device itself.
+`PKG` likely is the software updater for the device itself. ARM (thumb) code with
+base address 0x408000 and entry point 0x408725.
 
-`ESW` likely is the code for the LCD control panel.
+`ESW` is unknown, probably (factory) settings block ('environment software'?)
 
-`GFX` contains raw icon data for the LCD control panel. Upload section file to https://rawpixels.net/ and see
-yourself (width=50, height=2000, format=RGB32).
+`GFX` contains raw (uncompressed) icon data for the LCD control panel. Upload section
+file to https://rawpixels.net/ and see for yourself (width=50, height=2000, format=RGB32).
 
 `ISW` likely is the code/webserver for the web gui and cloud ('ISW' = 'internet software'?).
-Uses the [STM32F4xx peripherals library](https://www.st.com/content/st_com/en/products/embedded-software/mcu-mpu-embedded-software/stm32-embedded-software/stm32-standard-peripheral-libraries/stsw-stm32065.html)
+ARM (thumb) code with base address 0x8004200 and entry point 0x800c161. Uses the [STM32F4xx peripherals library](https://www.st.com/content/st_com/en/products/embedded-software/mcu-mpu-embedded-software/stm32-embedded-software/stm32-standard-peripheral-libraries/stsw-stm32065.html)
 and the [lwIP Lightweight IP stack](https://www.nongnu.org/lwip/2_0_x/index.html).
 
 `TXT` contains a FAT file system with HTML/CSS/PNG web gui data (`/0/imgs/v_logo.png`, `/0/favicon.ico`,
 `/0/index.htm`, `/0/css/minimzd.css`, ...). Use `fatcat section-2-2359062-1131675.bin -x
-/path/to/output/dir` to extract. Alle HTML/CSS/JS files are gzipped.
+/path/to/output/dir` to extract. All HTML/CSS/JS files are gzipped.
+
+### Disassemble / decompile
+
+`PKG` and `ISW` can be decompiled with your favourite [weapon of choice](https://reverseengineering.stackexchange.com/questions/1817/is-there-any-disassembler-to-rival-ida-pro):
+
+```
+retdec-decompiler.py -k -m raw -a thumb -e little --raw-entry-point  0x408725 --raw-section-vma  0x408000 section-1-0000036-0166496.bin
+retdec-decompiler.py -k -m raw -a thumb -e little --raw-entry-point 0x800c161 --raw-section-vma 0x8004200 section-2-2004394-0354616.bin
+```
 
 ### ToDo
 
-Sections with subtype `0001` contain 16 trailing bytes with unknown meaning
-(0x00000000, slen1+36, slen2+36, slen2+36). These bytes are not CRC-checked.
+Sections with subtype `0001` (code blocks) are followed by 16 trailing bytes with unknown meaning
+(0x00000000, slen1+36, slen2+36, slen2+36). These bytes are not CRC-checked explicitly.
 
