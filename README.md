@@ -20,6 +20,11 @@ changes are listed in the [changelog](http://cloud.vallox.com/changelog.txt).
 Development firmware files can be found for [alpha](http://firmware.vallox.com/alpha/HSWUPD.BIN),
 [beta](http://firmware.vallox.com/beta/HSWUPD.BIN) and [insider](http://firmware.vallox.com/insider/HSWUPD.BIN) stages.
 
+### UPnP
+
+The firmware includes a basic UPnP server which announces the URL `http://<device_ip>/unit.xml`.
+The XML stream lists manufacturer, model, unique ID, serial, version and more.
+
 ### Unpack firmware
 
 The firmware file HSWUPD.BIN contains several (nested) sections of data. Each
@@ -75,7 +80,7 @@ Writing output file 'section-2-2359062-1131675.bin'
 
 ### Firmware analysis
 
-Further examination reveals the following file layout and content:
+Further examination reveals the following file layout and content (firmware version 2.0.2):
 
 ```
           Filename                       Type-Subtype  Content
@@ -98,8 +103,9 @@ base address 0x408000 and entry point 0x408725.
 file to https://rawpixels.net/ and see for yourself (width=50, height=2000, format=RGB32).
 
 `ISW` likely is the code/webserver for the web gui and cloud ('ISW' = 'internet software'?).
-ARM (thumb) code with base address 0x8004200 and entry point 0x800c161. Uses the [STM32F4xx peripherals library](https://www.st.com/content/st_com/en/products/embedded-software/mcu-mpu-embedded-software/stm32-embedded-software/stm32-standard-peripheral-libraries/stsw-stm32065.html)
-and the [lwIP Lightweight IP stack](https://www.nongnu.org/lwip/2_0_x/index.html).
+ARM (thumb) code with base address 0x8004200 and entry point 0x800c161. Uses the [STM32F4xx peripherals library](https://www.st.com/content/st_com/en/products/embedded-software/mcu-mpu-embedded-software/stm32-embedded-software/stm32-standard-peripheral-libraries/stsw-stm32065.html),
+the [lwIP Lightweight IP stack](https://www.nongnu.org/lwip/2_0_x/index.html)
+and the [FatFs Generic FAT Filesystem Module](http://elm-chan.org/fsw/ff/00index_e.html).
 
 `TXT` contains a FAT file system with HTML/CSS/PNG web gui data (`/0/imgs/v_logo.png`, `/0/favicon.ico`,
 `/0/index.htm`, `/0/css/minimzd.css`, ...). Use `fatcat section-2-2359062-1131675.bin -x
@@ -116,6 +122,15 @@ retdec-decompiler.py -k -m raw -a thumb -e little --raw-entry-point 0x800c161 --
 
 ### ToDo
 
-Sections with subtype `0001` (code blocks) are followed by 16 trailing bytes with unknown meaning
-(0x00000000, slen1+36, slen2+36, slen2+36). These bytes are not CRC-checked explicitly.
+- Sections with subtype `0001` (code blocks) are followed by 16 trailing bytes with unknown meaning
+  (0x00000000, slen1+36, slen2+36, slen2+36). These bytes are not CRC-checked explicitly.
+
+- _Cyclone_, _Typhoon_,  and _Hurricane_ are internal codenames (_Cyclone_ = Base Board?, _Typhoon_ = Control
+  Panel?). To be checked.
+
+## Misc
+
+- The firmware contains model and branding information for both Vallox
+  products and [Airflow's Adroit product range](https://www.airflow.com/Products/residential_heatrecovery4/Adroit-Range).
+  Likely those products share one technical platform.
 
